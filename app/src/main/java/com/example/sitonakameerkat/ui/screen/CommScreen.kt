@@ -30,11 +30,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.sitonakameerkat.MainActivity
 import com.example.sitonakameerkat.database.MyDatabase
 import com.example.sitonakameerkat.logger
 import com.example.sitonakameerkat.screen.dialog.LoginInputDialog
 import com.example.sitonakameerkat.server.GHUsers
+import com.example.sitonakameerkat.ui.screen.dialog.MessageDialog
 import com.example.sitonakameerkat.ui.theme.SitonakaMeerkatTheme
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -53,6 +53,7 @@ fun CommScreen(modifier: Modifier = Modifier) {
     val users = dao.getAllUsersFlow().collectAsState(initial = listOf())
     var login by rememberSaveable { mutableStateOf("sitonaka") }
     var isShowInputDialog by rememberSaveable { mutableStateOf(false) }
+    var message by rememberSaveable { mutableStateOf("") }
     Column(modifier = modifier) {
         Row(modifier = Modifier.padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(text = "Login:")
@@ -91,7 +92,7 @@ fun CommScreen(modifier: Modifier = Modifier) {
                             dao.insertUsers(ghUsers)
                         }
                     }.onFailure {
-                        MainActivity.dialog(it.localizedMessage ?: "error")
+                        message = it.localizedMessage ?: "error"
                     }
                 }
             }) {
@@ -109,6 +110,7 @@ fun CommScreen(modifier: Modifier = Modifier) {
             login = it
         }
     }
+    MessageDialog(message = message) { message = "" }
 }
 
 @Composable

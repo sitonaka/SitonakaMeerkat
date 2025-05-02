@@ -10,8 +10,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.collectAsState
 import androidx.core.app.ActivityCompat
-import com.example.sitonakameerkat.screen.MainAlertDialog
 import com.example.sitonakameerkat.screen.MainScreen
+import com.example.sitonakameerkat.ui.screen.dialog.MessageDialog
 import com.example.sitonakameerkat.ui.theme.SitonakaMeerkatTheme
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -28,37 +28,12 @@ class MainActivity : ComponentActivity() {
 
     companion object {
         private lateinit var Instance: MainActivity
-        suspend fun dialog(
-            text: String,
-            confirm: String = "OK",
-            dismiss: String? = null,
-            title: String? = null
-        ): Boolean {
-            return Instance.showAlertDialog(confirm, dismiss, title, text)
-        }
         suspend fun location(): String {
             return Instance.getCurrentLocation()
         }
     }
 
-    private val confirmFlow: MutableStateFlow<String> = MutableStateFlow("")
-    private val dismissFlow: MutableStateFlow<String?> = MutableStateFlow(null)
-    private val titleFlow: MutableStateFlow<String?> = MutableStateFlow(null)
-    private val textFlow: MutableStateFlow<String> = MutableStateFlow("")
-
-    private lateinit var alertContinuation: Continuation<Boolean>
-    private suspend fun showAlertDialog(
-        confirm: String,
-        dismiss: String?,
-        title: String?,
-        text: String
-    ): Boolean = suspendCoroutine {
-        alertContinuation = it
-        confirmFlow.value = confirm
-        dismissFlow.value = dismiss
-        titleFlow.value = title
-        textFlow.value = text
-    }
+    private val message: MutableStateFlow<String> = MutableStateFlow("")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,21 +44,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             SitonakaMeerkatTheme {
                 MainScreen()
-                val confirm = confirmFlow.collectAsState()
-                val dismiss = dismissFlow.collectAsState()
-                val title = titleFlow.collectAsState()
-                val text = textFlow.collectAsState()
-                if (text.value.isNotEmpty()) {
-                    MainAlertDialog(
-                        confirm = confirm.value,
-                        dismiss = dismiss.value,
-                        title = title.value,
-                        text = text.value
-                    ) {
-                        alertContinuation.resume(it)
-                        textFlow.value = ""
-                    }
-                }
+                MessageDialog(message = message.collectAsState().value) { message.value = "" }
             }
         }
     }
@@ -147,7 +108,7 @@ class MainActivity : ComponentActivity() {
                     Manifest.permission.ACCESS_FINE_LOCATION
                 )
                 if (shouldShow) {
-                    dialog("App need ACCESS_FINE_LOCATION")
+                    message.value = "App need ACCESS_FINE_LOCATION"
                 }
                 throw Exception("Permission denied.")
             }

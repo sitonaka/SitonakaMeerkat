@@ -12,6 +12,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.sitonakameerkat.MainActivity
+import com.example.sitonakameerkat.ui.screen.dialog.MessageDialog
 import com.example.sitonakameerkat.ui.theme.SitonakaMeerkatTheme
 import kotlinx.coroutines.launch
 
@@ -20,6 +21,7 @@ import kotlinx.coroutines.launch
 fun HomeScreen(modifier: Modifier = Modifier) {
     val scope = rememberCoroutineScope()
     var location by rememberSaveable { mutableStateOf("") }
+    var message by rememberSaveable { mutableStateOf("") }
     Column(modifier = modifier) {
         Text(text = "Location  $location")
         Button(onClick = {
@@ -29,13 +31,14 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                 }.onSuccess {
                     location = it
                 }.onFailure {
-                    MainActivity.dialog(it.localizedMessage ?: "error")
+                    message = it.localizedMessage ?: "error"
                 }
             }
         }) {
             Text(text = "Get Location")
         }
     }
+    MessageDialog(message = message) { message = "" }
 }
 
 @Preview(showBackground = true)
